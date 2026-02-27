@@ -17,7 +17,7 @@ pub fn run(terminal: &mut TuiTerminal, app: &mut App) -> Result<(), io::Error> {
         .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
 
     // Initial fetch so the overview is populated right away
-    refresh_overview(app, &gh);
+    app.refresh_overview(&gh)?;
 
     loop {
         terminal.draw(|f| ui::draw(f, app))?;
@@ -46,50 +46,20 @@ pub fn run(terminal: &mut TuiTerminal, app: &mut App) -> Result<(), io::Error> {
                     // Save config (repo list)
                     app.try_add_repo()?;
                     // Refresh overview (best effort; show error popup on failure)
-                    refresh_overview(app, &gh);
+                    app.refresh_overview(&gh)?;
                 }
 
                 state::Action::ConfirmDelete => {
                     // Save config (repo list)
                     app.delete_selected()?;
                     // Refresh overview (best effort; show error popup on failure)
-                    refresh_overview(app, &gh);
+                    app.refresh_overview(&gh)?;
                 }
 
                 state::Action::RefreshOverview => {
-                    refresh_overview(app, &gh);
+                    app.refresh_overview(&gh)?;
                 }
             }
         }
-    }
-}
-
-fn refresh_overview(app: &mut App, gh: &crate::github::GitHubClient) {
-    app.pr_rows.clear();
-
-    for repo_url in &app.cfg.repos {
-        let (owner, name) = match crate::app::repo::owner_and_name(repo_url) {
-            Ok(v) => v,
-            Err(e) => {
-                app.set_error(format!("Invalid repo in config: {repo_url} ({e})"));
-                return;
-            }
-        };
-
-        let rows = match crate::app::overview::fetch_repo_open_prs(gh, &owner, &name) {
-            Ok(v) => v,
-            Err(e) => {
-                app.set_error(format!("Failed to fetch PRs for {owner}/{name}: {e}"));
-                return;
-            }
-        };
-
-        app.pr_rows.extend(rows);
-    }
-
-    if app.pr_rows.is_empty() {
-        app.pr_selected.select(None);
-    } else {
-        app.pr_selected.select(Some(0));
     }
 }

@@ -55,7 +55,13 @@ pub fn owner_and_name(normalized_repo_url: &str) -> Result<(String, String), Str
     if parts.len() < 2 {
         return Err("Invalid repo URL".into());
     }
-    let owner = parts.get(parts.len() - 2).ok_or("Missing owner")?.to_string();
-    let name = parts.get(parts.len() - 1).ok_or("Missing repo")?.to_string();
+    let owner = parts
+        .get(parts.len() - 2)
+        .ok_or("Missing owner")?
+        .to_string();
+    let name = parts
+        .get(parts.len() - 1)
+        .ok_or("Missing repo")?
+        .to_string();
     Ok((owner, name))
 }

@@ -13,6 +13,8 @@ pub enum ReviewStatus {
 pub struct PrOverviewRow {
     pub repo: String,
     pub number: u64,
+    pub title: String,
+    pub url: String,
     pub status: ReviewStatus,
     pub author: String,
     pub requested_reviewers: Vec<String>,
@@ -97,7 +99,10 @@ pub struct ReviewNode {
 }
 
 impl ReviewStatus {
-    pub fn from_review_decision(decision: Option<&str>, requested_reviewers_nonempty: bool) -> Self {
+    pub fn from_review_decision(
+        decision: Option<&str>,
+        requested_reviewers_nonempty: bool,
+    ) -> Self {
         match decision {
             Some("APPROVED") => ReviewStatus::Approved,
             Some("CHANGES_REQUESTED") => ReviewStatus::ChangesRequested,

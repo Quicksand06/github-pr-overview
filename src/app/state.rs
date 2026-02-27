@@ -2,7 +2,7 @@ use std::{io, path::PathBuf};
 
 use ratatui::widgets::TableState;
 
-use super::{config, repo, config::AppConfig};
+use super::{config, config::AppConfig, repo};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mode {
@@ -24,7 +24,7 @@ pub enum Action {
     Backspace,
     SubmitAdd,
     ConfirmDelete,
-    RefreshOverview
+    RefreshOverview,
 }
 
 #[derive(Debug)]
@@ -49,7 +49,7 @@ impl App {
             table.select(Some(0));
         }
         let mut pr_selected = TableState::default();
-pr_selected.select(None);
+        pr_selected.select(None);
         Self {
             mode: Mode::Normal,
             cfg_path,
@@ -57,8 +57,8 @@ pr_selected.select(None);
             table,
             input: String::new(),
             message: String::new(),
-             pr_rows: Vec::new(),
-  pr_selected
+            pr_rows: Vec::new(),
+            pr_selected,
         }
     }
 
@@ -160,24 +160,24 @@ pr_selected.select(None);
     }
 
     pub fn refresh_overview(&mut self, gh: &crate::github::GitHubClient) -> Result<(), io::Error> {
-    self.pr_rows.clear();
+        self.pr_rows.clear();
 
-    for repo_url in &self.cfg.repos {
-        let (owner, name) = crate::app::repo::owner_and_name(repo_url)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e))?;
+        for repo_url in &self.cfg.repos {
+            let (owner, name) = crate::app::repo::owner_and_name(repo_url)
+                .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e))?;
 
-        let rows = crate::app::overview::fetch_repo_open_prs(gh, &owner, &name)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+            let rows = crate::app::overview::fetch_repo_open_prs(gh, &owner, &name)
+                .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
 
-        self.pr_rows.extend(rows);
+            self.pr_rows.extend(rows);
+        }
+
+        if self.pr_rows.is_empty() {
+            self.pr_selected.select(None);
+        } else {
+            self.pr_selected.select(Some(0));
+        }
+
+        Ok(())
     }
-
-    if self.pr_rows.is_empty() {
-        self.pr_selected.select(None);
-    } else {
-        self.pr_selected.select(Some(0));
-    }
-
-    Ok(())
-}
 }

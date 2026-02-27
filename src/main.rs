@@ -1,8 +1,8 @@
 use std::io;
 
 mod app;
-mod tui;
 mod github;
+mod tui;
 
 fn main() -> Result<(), io::Error> {
     // Load .env (PAT stays there)

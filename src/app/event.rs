@@ -27,6 +27,7 @@ pub fn read_action(mode: Mode) -> io::Result<Option<Action>> {
             KeyCode::Down | KeyCode::Char('j') => Some(Action::MoveDown),
             KeyCode::Char('a') => Some(Action::OpenAdd),
             KeyCode::Char('d') => Some(Action::OpenDeleteConfirm),
+            KeyCode::Char('r') => Some(Action::RefreshOverview),
             _ => None,
         },
 
@@ -35,7 +36,11 @@ pub fn read_action(mode: Mode) -> io::Result<Option<Action>> {
             KeyCode::Enter => Some(Action::SubmitAdd),
             KeyCode::Backspace => Some(Action::Backspace),
             KeyCode::Char(c) => {
-                if c.is_control() { None } else { Some(Action::InputChar(c)) }
+                if c.is_control() {
+                    None
+                } else {
+                    Some(Action::InputChar(c))
+                }
             }
             _ => None,
         },

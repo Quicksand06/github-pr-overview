@@ -1,7 +1,7 @@
 use crate::github::{
+    GitHubClient, PrOverviewRow, ReviewStatus,
     queries::REPO_OPEN_PRS_QUERY,
     types::{GraphQlResponse, RepoOpenPrsData},
-    GitHubClient, PrOverviewRow, ReviewStatus,
 };
 
 pub fn fetch_repo_open_prs(
@@ -18,7 +18,11 @@ pub fn fetch_repo_open_prs(
     let resp: GraphQlResponse<RepoOpenPrsData> = gh.graphql(REPO_OPEN_PRS_QUERY, vars)?;
 
     if let Some(errors) = resp.errors {
-        let joined = errors.into_iter().map(|e| e.message).collect::<Vec<_>>().join("; ");
+        let joined = errors
+            .into_iter()
+            .map(|e| e.message)
+            .collect::<Vec<_>>()
+            .join("; ");
         return Err(joined);
     }
 
@@ -52,7 +56,8 @@ pub fn fetch_repo_open_prs(
 
         let requested_nonempty = !requested_reviewers.is_empty();
 
-        let status = ReviewStatus::from_review_decision(pr.review_decision.as_deref(), requested_nonempty);
+        let status =
+            ReviewStatus::from_review_decision(pr.review_decision.as_deref(), requested_nonempty);
 
         // Summarize latest reviews (keep last 20 from API result)
         let latest_reviews = pr
@@ -61,7 +66,10 @@ pub fn fetch_repo_open_prs(
             .unwrap_or_default()
             .into_iter()
             .filter_map(|r| {
-                let who = r.author.and_then(|a| a.login).unwrap_or_else(|| "unknown".into());
+                let who = r
+                    .author
+                    .and_then(|a| a.login)
+                    .unwrap_or_else(|| "unknown".into());
                 Some((who, r.state))
             })
             .collect::<Vec<_>>();
@@ -69,6 +77,8 @@ pub fn fetch_repo_open_prs(
         rows.push(PrOverviewRow {
             repo: repo.name_with_owner.clone(),
             number: pr.number,
+            title: pr.title,
+            url: pr.url,
             status,
             author,
             requested_reviewers,
